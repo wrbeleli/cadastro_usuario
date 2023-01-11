@@ -1,0 +1,59 @@
+import java.sql.*;
+import javax.mail.*;
+import javax.mail.internet.*;
+import java.util.*;
+
+public class Cadastro {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        // Pedir informações do usuário
+        System.out.print("Informe o seu nome: ");
+        String nome = sc.nextLine();
+        System.out.print("Informe o seu e-mail: ");
+        String email = sc.nextLine();
+        System.out.print("Informe o seu telefone: ");
+        String telefone = sc.nextLine();
+
+        // Armazenar informações em um banco de dados
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            Connection con = DriverManager.getConnection(
+                "jdbc:mysql://localhost:3306/banco_de_dados", "usuario", "senha");
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate("INSERT INTO clientes (nome, email, telefone) VALUES ('"
+                + nome + "', '" + email + "', '" + telefone + "')");
+            con.close();
+            System.out.println("Informações armazenadas com sucesso!");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
+        // Enviar e-mail de confirmação
+        try {
+            String destinatario = email;
+            String assunto = "Confirmação de cadastro";
+            String corpo = "Olá, " + nome + ". Seu cadastro foi realizado com sucesso!";
+
+            Properties props = new Properties();
+            props.put("mail.smtp.host", "smtp.seudominio.com");
+            props.put("mail.smtp.socketFactory.port", "465");
+            props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            props.put("mail.smtp.auth", "true");
+            props.put("mail.smtp.port", "465");
+
+            Session sessao = Session.getDefaultInstance(props,
+                new javax.mail.Authenticator() {
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication("seuemail@seudominio.com", "suasenha");
+                    }
+                });
+
+            Message message = new MimeMessage(sessao);
+            message.setFrom(new InternetAddress("seuemail@seudominio.com"));
+
+            Address[] toUser = InternetAddress.parse(destinatario);
+            message.setRecipients(Message.RecipientType.TO, toUser);
+            message.setSubject(assunto);
+            message.setText(corpo);
+            Transport.
