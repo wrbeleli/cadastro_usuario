@@ -1,0 +1,26 @@
+import sqlite3
+import smtplib
+
+def cadastrar_usuario(email, nome, telefone):
+    # conectando ao banco de dados
+    conn = sqlite3.connect('usuarios.db')
+    c = conn.cursor()
+    # criando a tabela se ela não existir
+    c.execute('''CREATE TABLE IF NOT EXISTS usuarios (email text, nome text, telefone text)''')
+    # inserindo os dados do usuário
+    c.execute("INSERT INTO usuarios VALUES (?,?,?)", (email, nome, telefone))
+    conn.commit()
+    print(f'Usuário {nome} cadastrado com sucesso.')
+
+    # enviando email de confirmação
+    server = smtplib.SMTP('smtp.example.com', 587)
+    server.starttls()
+    server.login("email_remetente@example.com", "senha")
+    msg = f'Olá {nome}, seu cadastro foi realizado com sucesso.'
+    server.sendmail("email_remetente@example.com", email, msg)
+    server.quit()
+    print(f'Email de confirmação enviado para {email}.')
+    conn.close()
+
+# exemplo de uso
+cadastrar_usuario('teste1@example.com', 'Wenderson Beleli', '555-555-5555')
